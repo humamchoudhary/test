@@ -31,9 +31,13 @@ def download():
 @app.route("/getfile")
 def get_file():
     file = os.listdir("./")
+    list = []
     for i in file:
-        print(i)
-    return "hello"
+        list.append(i)
+    response = jsonify({
+        "data":list
+    })
+    return response
 
 
 if __name__ == "__main__":
