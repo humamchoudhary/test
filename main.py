@@ -22,7 +22,8 @@ anime_table = db.table("Anime_data")
 
 @app.route('/login', methods=['POST'])
 def LoginRoute():
-
+ 
+ 
     # fetching the global response variable to manipulate inside the function
     global response
 
