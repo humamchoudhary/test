@@ -7,38 +7,148 @@ from login import Login
 from Essentials.UserTree import *
 from Essentials.Account import *
 from signup import Signup
+from rafay.history import *
 import os
-import gdown
+
 response = ''
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = os.path.join("")
-
 db = TinyDB("database.json")
 query = Query()
-movie_table = db.table("Movie_data")
+movies_table = db.table("Movie_data")
+show_table = db.table("Show_data")
+anime_table = db.table("Anime_data")
 
 
-@app.route("/download")
-def download():
+@app.route('/login', methods=['POST'])
+def LoginRoute():
 
-    url = "https://drive.google.com/drive/folders/1qShpdNhjEZmmOArbfIq2xFNncGDMetSL?usp=sharing"
-    if url.split('/')[-1] == '?usp=sharing':
-        url = url.replace('?usp=sharing', '')
+    # fetching the global response variable to manipulate inside the function
+    global response
 
-    gdown.download_folder(url)
+    if (request.method == 'POST'):
+        request_data = request.data
+        request_data = json.loads(request_data.decode('utf-8'))
+
+        # request_data = request.args
+
+        username = request_data['username']
+        password = request_data['password']
+
+        try:
+            account = Login(username, password)
+            account = account.account
+            response = jsonify({"error": "Logged in", "account": {
+                               "username": account.account.username, "profiles": account.get_all_profiles()}})
+            return make_response(response, 200)
+        except Exception as e:
+
+            response = jsonify({"error": str(e), "account": 'None'})
+            return make_response(response, 400)
+    else:
+        return response
 
 
-@app.route("/getfile")
-def get_file():
-    file = os.listdir("./")
-    list = []
-    for i in file:
-        list.append(i)
-    response = jsonify({
-        "data":list
+@app.route('/signup', methods=['POST'])
+def SignUpRoute():
+    global response
+
+    if (request.method == 'POST'):
+        # request_data = request.args
+
+        request_data = request.data
+        request_data = json.loads(request_data.decode('utf-8'))
+
+        username = request_data["username"]
+        password = request_data["password"]
+        email = request_data["email"]
+        name = request_data["name"]
+        try:
+            signup = Signup(name, email, username, password)
+            response = jsonify({"error": "None"})
+            signup.Print_Account_Details()
+            return make_response(response, 200)
+        except Exception as e:
+            response = jsonify({"error": str(e)})
+            return make_response(response, 400)
+    else:
+
+        return response
+
+
+@app.route('/getimages')
+def get_image():
+    img = request.args.get('img')
+    filename = f"images/{img}"
+    return send_file(filename, mimetype='image/gif')
+
+
+@app.route('/get_eps')
+def get_eps():
+    epsno = request.args.get('epsno')
+    id = request.args.get('id')
+    file = open(f'{id}.pkl', 'rb')
+    animelist = pickle.load(file)
+    file.close()
+    result = animelist[id].next(epsno)
+    response = jsonify(requests)
+    return make_response(response)
+
+
+@app.route("/get_history")
+def get_history():
+    player = Watch_history()
+    player.Add_history({
+        "id": "movie/watch-avengers-age-of-ultron-19729",
+        "title": "Avengers: Age of Ultron",
+        "coverImg":
+        "https://img.flixhq.to/xxrz/250x400/379/76/e8/76e8bc195d6dff37d1fbbf815ce467e9/76e8bc195d6dff37d1fbbf815ce467e9.jpg",
+        "genres": ["Action", "Adventure", "Science Fiction"],
     })
-    return response
+    player.Add_history({
+        "id": "movie/watch-avengers-age-of-ultron-19729",
+        "title": "Avengers: Age of Ultron",
+        "coverImg":
+        "https://img.flixhq.to/xxrz/250x400/379/76/e8/76e8bc195d6dff37d1fbbf815ce467e9/76e8bc195d6dff37d1fbbf815ce467e9.jpg",
+        "genres": ["Action", "Adventure", "Science Fiction"],
+    })
+    player.Add_history({
+        "id": "movie/watch-avengers-age-of-ultron-19729",
+        "title": "Avengers: Age of Ultron",
+        "coverImg":
+        "https://img.flixhq.to/xxrz/250x400/379/76/e8/76e8bc195d6dff37d1fbbf815ce467e9/76e8bc195d6dff37d1fbbf815ce467e9.jpg",
+        "genres": ["Action", "Adventure", "Science Fiction"],
+    })
+    player.Add_history({
+        "id": "movie/watch-avengers-age-of-ultron-19729",
+        "title": "Avengers: Age of Ultron",
+        "coverImg":
+        "https://img.flixhq.to/xxrz/250x400/379/76/e8/76e8bc195d6dff37d1fbbf815ce467e9/76e8bc195d6dff37d1fbbf815ce467e9.jpg",
+        "genres": ["Action", "Adventure", "Science Fiction"],
+    })
 
+    response = jsonify({"data": player.get_all()})
+    return make_response(response)  # prints "video3.mp4"
+
+@app.route("/", methods=["GET"])
+def main():
+    return render_template("index.html")
+
+
+@app.route("/getAllMovies", methods=["GET"])
+def getMovies():
+    response = jsonify({"result": movies_table.all()})
+    return make_response(response)
+
+@app.route("/getAllAnime",methods = ["GET"])
+def getAllAnime():
+    response = jsonify({"result": anime_table.all()})
+    return make_response(response)
+    
+@app.route("/getAllShow",methods = ["GET"])
+def getAllShow():
+    response = jsonify({"result": show_table.all()})
+    return make_response(response)
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
