@@ -1,4 +1,4 @@
-Flask==2.2.2
+Flask==1.1.4
 Frozen_Flask==0.18
 gdown==4.6.0
 requests==2.28.1
