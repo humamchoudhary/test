@@ -9,7 +9,7 @@ from Essentials.Account import *
 from signup import Signup
 from rafay.history import *
 import os
-from flask_frozen import Freezer
+
 response = ''
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = os.path.join("")
@@ -22,7 +22,6 @@ anime_table = db.table("Anime_data")
 
 @app.route('/login', methods=['POST'])
 def LoginRoute():
- 
 
     # fetching the global response variable to manipulate inside the function
     global response
@@ -150,6 +149,6 @@ def getAllAnime():
 def getAllShow():
     response = jsonify({"result": show_table.all()})
     return make_response(response)
-freezer = Freezer(app)
+
 if __name__ == "__main__":
-    freezer.freeze()
+    app.run(debug=True, host="0.0.0.0")
