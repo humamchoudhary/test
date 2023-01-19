@@ -10,6 +10,7 @@ class Signup:
     DB = TinyDB("./database.json")
     User = Query()
     table = DB.table("User_Data")
+    
 
     def __init__(self, name, email, username, password):
         self.name = name
@@ -49,6 +50,6 @@ class Signup:
 
 
 if __name__ == "__main__":
-    signup = Signup("humam", "humam@gmail.com", "humam02", "12345678")
+    signup = Signup("humam", "humam@gmail.com", "humam2", "12345678")
     signup.tree.save_user()
 

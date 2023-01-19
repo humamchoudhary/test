@@ -1,4 +1,7 @@
+from Essentials.history import Watch_history
 from Exceptions import *
+from collections import defaultdict
+from Essentials.Queue import queue
 import random
 import pickle
 imgs = ['randimage0.png', 'randimage1.png', 'randimage2.png', 'randimage3.png', 'randimage4.png', 'randimage5.png',
@@ -8,14 +11,12 @@ imgs = ['randimage0.png', 'randimage1.png', 'randimage2.png', 'randimage3.png', 
 class UserProfile:
     def __init__(self, username):
         self.username = username
-        self.watch_history = [
-
-        ]  # Replace with stack later
-        self.watched = [{"animeID":[True, False,] }]
-        self.watch_list = []
-
+        self.watch_history = Watch_history()
+        self.watched = defaultdict(list)
+        self.watch_list = queue()
+        
     def add_to_watch_history(self, content_id):
-        self.watch_history.append(content_id)
+        self.watch_history.push(content_id)
 
     def get_Img(self):
         self.img = random.choice(imgs)
@@ -65,16 +66,16 @@ class UserTree:
         profiles = []
         profiles.append({
             "username": self.root.data.username,
-            "history": self.root.data.watch_history,
-            "watchlist": self.root.data.watch_list,
+            "history": self.root.data.watch_history.get_all(),
+            "watchlist": list(self.root.data.watch_list.l),
             "img": self.root.data.img
         })
         for profile in self.root.children:
             print(profile.data.username)
             profiles.append({
                 "username": profile.data.username,
-                "history": profile.data.watch_history,
-                "watchlist": profile.data.watch_list,
+                "history": profile.data.watch_history.get_all(),
+                "watchlist": list(profile.data.watch_list.l),
                 "img": profile.data.img
             })
         return profiles
@@ -89,6 +90,47 @@ class UserTree:
                     del profile
 
     def save_user(self):
-        print(f'{self.account}.pkl')
+        
         with open(f'{self.account}.pkl', 'wb') as enc_file:
             pickle.dump(self, enc_file, None)
+
+
+#---Func for creating list for watched eps
+def create_watched(data,token,profilename,id):
+        
+    with open(f'{token}.pkl', 'rb') as f:
+        usertree = pickle.load(f)
+
+    userprofile = usertree.load_profile(profilename)
+    
+    if id in userprofile.watched:
+        return
+    print(id)
+    for show in data:
+        print(show["id"])
+        if show["id"] == id:
+            try:
+                totaleps = len(show["episodes"])
+            except:
+                totaleps = 1
+
+    [userprofile.watched[id].append(False) for x in range(totaleps)]            
+    
+    with open(f'{token}.pkl', 'wb') as w:
+        pickle.dump(usertree,w)
+
+    return    
+
+
+#Function for calling a list where the episodes that user already watched is stored
+def completed_eps(data,token,profilename,id):
+    with open(f'{token}.pkl', 'rb') as f:
+        usertree = pickle.load(f)
+
+    userprofile = usertree.load_profile(profilename)
+
+    if id not in userprofile.watched:
+        return
+
+    return userprofile.watched[id]
+
